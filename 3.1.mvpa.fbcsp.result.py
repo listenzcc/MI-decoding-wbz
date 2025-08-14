@@ -41,6 +41,8 @@ def find_csp_voting_files(src: Path):
 # %% ---- 2025-08-14 ------------------------
 # Read files and summary voting results
 data = []
+y_true_stack = []
+y_pred_stack = []
 for info, p in find_csp_voting_files(data_directory):
     print(info)
     print(p)
@@ -64,15 +66,27 @@ for info, p in find_csp_voting_files(data_directory):
     acc = metrics.accuracy_score(y_true=y_true, y_pred=y_pred)
     data.append({'subject': info['sn'], 'acc': acc, 'freqIdx': 'vote'})
 
+    y_true_stack.append(y_true)
+    y_pred_stack.append(y_pred)
+
 data = pd.DataFrame(data)
 print(data)
 
 group = data.groupby(by=['freqIdx', 'subject'])
 print(group['acc'].mean())
 
+print('-' * 80)
+print('Mean acc groupby subject')
 print(data.query('freqIdx=="vote"'))
-print('Mean acc=', data.query('freqIdx=="vote"')['acc'].mean())
 
+print('-' * 80)
+print('Mean acc=', end=' ')
+print(data.query('freqIdx=="vote"')['acc'].mean())
+
+print('-' * 80)
+print('Confusion matrix')
+print(metrics.confusion_matrix(y_true=np.concat(
+    y_true_stack), y_pred=np.concat(y_pred_stack)))
 # %% ---- 2025-08-14 ------------------------
 # Pending
 
