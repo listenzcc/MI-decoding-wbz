@@ -1,6 +1,7 @@
 # Private ignore
 private
 raw
+log
 
 # Python ignore
 __pycache__/
