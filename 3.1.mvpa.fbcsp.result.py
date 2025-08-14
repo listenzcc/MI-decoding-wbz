@@ -70,23 +70,41 @@ for info, p in find_csp_voting_files(data_directory):
     y_pred_stack.append(y_pred)
 
 data = pd.DataFrame(data)
-print(data)
 
-group = data.groupby(by=['freqIdx', 'subject'])
+
+group = data.groupby(by=['freqIdx'])
 print(group['acc'].mean())
+print('-' * 80)
+print('Max acc in singleFreq')
+print(group['acc'].mean().max())
 
 print('-' * 80)
-print('Mean acc groupby subject')
+print('Acc(vote)')
 print(data.query('freqIdx=="vote"'))
 
 print('-' * 80)
-print('Mean acc=', end=' ')
+print('Mean acc(vote) =', end=' ')
 print(data.query('freqIdx=="vote"')['acc'].mean())
 
 print('-' * 80)
 print('Confusion matrix')
 print(metrics.confusion_matrix(y_true=np.concat(
     y_true_stack), y_pred=np.concat(y_pred_stack)))
+
+# %%
+acc = data.query('freqIdx=="vote"')['acc'].mean()
+x = [f[0] for f in d['freqs']]
+plt.style.use('ggplot')
+plt.plot(x, group['acc'].mean().to_list()[:-1])
+plt.xlabel('Freq (Hz)')
+plt.ylabel('Acc')
+plt.title(f'Acc vs. freq | vote {acc=:0.2f}')
+plt.hlines(y=0.5, xmin=np.min(x), xmax=np.max(
+    x), colors='gray', linestyles='-.')
+plt.tight_layout()
+with PdfPages(data_directory.joinpath('acc-freq.pdf')) as pdf:
+    pdf.savefig(plt.gcf())
+
 # %% ---- 2025-08-14 ------------------------
 # Pending
 
