@@ -71,7 +71,7 @@ for p, subject_name in find_epochs_files(raw_directory):
         filter_kwargs = {'l_freq': fmin, 'h_freq': fmax, 'n_jobs': n_jobs}
         epochs_filter = md.epochs.copy()
         epochs_filter.filter(**filter_kwargs)
-        epochs_filter.apply_baseline((-1, 0))
+        epochs_filter.apply_baseline((-2, 0))
         epochs_filter.crop(tmin=0, tmax=4)
 
         X = epochs_filter.get_data(copy=False)

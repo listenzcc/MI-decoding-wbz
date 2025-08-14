@@ -93,7 +93,7 @@ print(metrics.confusion_matrix(y_true=np.concat(
 
 # %%
 acc = data.query('freqIdx=="vote"')['acc'].mean()
-x = [f[0] for f in d['freqs']]
+x = [np.mean(f) for f in d['freqs']]
 plt.style.use('ggplot')
 plt.plot(x, group['acc'].mean().to_list()[:-1])
 plt.xlabel('Freq (Hz)')
