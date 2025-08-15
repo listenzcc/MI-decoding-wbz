@@ -56,9 +56,9 @@ def find_epochs_files(src: Path):
 mpl.use('pdf')
 
 for p, subject_name in find_epochs_files(raw_directory):
-
     # Read data
     md.read_from_file(src=p)
+    md.drop_channel('afz')
     md.epochs.apply_baseline((None, 0))
 
     with PdfPages(data_directory.joinpath(f'{subject_name}.pdf')) as pdf:
@@ -75,8 +75,16 @@ for p, subject_name in find_epochs_files(raw_directory):
         fig = evoked.plot_sensors(show_names=True)
         pdf.savefig(fig)
 
-    print(md.epochs.info, file=open(data_directory.joinpath(
-        f'{subject_name}-info.txt'), 'w'))
+    evoked = md.epochs.average()
+    data = evoked.data
+    with open(data_directory.joinpath(f'{subject_name}-info.txt'), 'w') as f:
+        for k, v in md.epochs.info.items():
+            f.writelines([f'{k}: {v=}', '\n'])
+
+        f.writelines(['\n', 'Channel value range', '\n'])
+        for ch_name, d in zip(md.epochs.ch_names, data):
+            f.writelines(
+                [f'{ch_name:<4}: {np.min(d):0.4f} - {np.max(d):0.4f} ({d.shape=})', '\n'])
 
     logger.info(f'Job finished {subject_name=}')
 

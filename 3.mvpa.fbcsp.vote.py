@@ -57,6 +57,7 @@ freq_ranges = [(e, e+4) for e in range(1, 45, 2)]
 
 for p, subject_name in find_epochs_files(raw_directory):
     md.read_from_file(src=p)
+    md.drop_channel('afz')
 
     # Map y: 0 -> 10, 1 -> 11
     y = md.epochs.events[:, 2]

@@ -50,6 +50,17 @@ class MyData(object):
         self.event_id = epochs.event_id
         return epochs
 
+    def drop_channel(self, ch_name: str):
+        '''
+        Drop the channel by @ch_name from the epochs.
+        The dropping is not case sensitive.
+
+        :param str ch_name: The dropped ch_name.
+        '''
+        ch_names = [e for e in self.epochs.ch_names
+                    if not e.lower() == ch_name.lower()]
+        self.epochs.pick_channels(ch_names)
+
 
 # %% ---- 2025-08-14 ------------------------
 # Play ground
