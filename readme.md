@@ -18,3 +18,10 @@ Decoding MI EEG data with MNE[^mne] software.
 - Implement FBCSP decoding using probability voting in 3.mvpa.fbcsp.vote.py
 - Define frequency bands in util/bands.py
 - Implement data handling in util/data.py
+
+### 2025-8-15
+
+- Implement channel dropping functionality and update data processing to exclude 'afz' channel
+- Update baseline application range in epochs filtering for improved data accuracy
+- Refactor voting results summary to group by frequency and improve accuracy reporting; add visualization of accuracy vs frequency.
+- Enhance voting results summary by appending true and predicted labels for confusion matrix calculation
