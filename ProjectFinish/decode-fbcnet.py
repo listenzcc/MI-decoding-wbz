@@ -26,16 +26,20 @@ from torcheeg.models import FBCNet
 from sklearn.metrics import classification_report
 
 from util.easy_import import *
-from collect_data import find_bdf_files, read_eeg_data, MyData
+from collect_data import find_bdf_files, find_vhdr_files, read_eeg_data, MyData
 
 # %%
 DATA_DIR = Path('./raw/MI-data-2024')
 SUBJECT = 'S1'
+
+DATA_DIR = Path('./raw/MI_5')
+SUBJECT = 'zg'
+
 DEVICE = 3
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
-    DEVICE = int(SUBJECT[1:]) % 6
+    DEVICE = np.random.randint(0, 6)  # int(SUBJECT[1:]) % 6
 
 
 # %%
@@ -90,7 +94,7 @@ class DataLoader:
 
 # %% ---- 2025-11-06 ------------------------
 # Play ground
-table = find_bdf_files(DATA_DIR).query(f'subject == "{SUBJECT}"')
+table = find_vhdr_files(DATA_DIR).query(f'subject == "{SUBJECT}"')
 print(table)
 
 mds = []
@@ -109,7 +113,7 @@ print(f'{epochs=}, {groups=}, {labels=}')
 
 # Filter and stack X
 baseline = (-1, 0)
-tmin, tmax = 0, 4
+tmin, tmax = 0.5, 3.5
 new_X = []
 for low_freq, high_freq in tqdm(FREQ_RANGES, 'Filtering'):
     # 频带滤波
@@ -148,7 +152,7 @@ for test_group in np.unique(groups):
     # Model
     model = FBCNet(
         num_electrodes=shape[2],
-        chunk_size=400,
+        chunk_size=600,
         in_channels=shape[1],
         num_classes=num_classes,
     ).cuda(DEVICE)
@@ -161,7 +165,7 @@ for test_group in np.unique(groups):
     print(model, criterion, optimizer)
 
     # Training loop
-    dl = DataLoader(X[:, :, :, :400], y, groups, test_group=test_group)
+    dl = DataLoader(X[:, :, :, :600], y, groups, test_group=test_group)
     it = iter(dl.yield_train_data(batch_size=64))
 
     output_path = OUTPUT_DIR.joinpath(f'{test_group}.dump')

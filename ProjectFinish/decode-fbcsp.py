@@ -25,11 +25,14 @@ from sklearn.model_selection import LeaveOneGroupOut, cross_val_predict
 from mne.decoding import CSP, Scaler
 
 from util.easy_import import *
-from collect_data import find_bdf_files, read_eeg_data, MyData
+from collect_data import find_bdf_files, find_vhdr_files, read_eeg_data, MyData
 
 # %%
 DATA_DIR = Path('./raw/MI-data-2024')
 SUBJECT = 'S1'
+
+DATA_DIR = Path('./raw/MI_5')
+SUBJECT = 'zg'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
@@ -48,13 +51,14 @@ OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 def decode_on_band(l_freq, h_freq, epochs, groups, labels):
     # Setup
     baseline = (-1, 0)
-    tmin, tmax = 0, 4
+    tmin, tmax = 0.5, 3.5
 
     # Work on the copied epochs
     epochs = epochs.copy()
     epochs.filter(l_freq=l_freq, h_freq=h_freq, n_jobs=n_jobs)
     epochs.apply_baseline(baseline)
     epochs.crop(tmin=tmin, tmax=tmax)
+    print(epochs)
 
     # Prepare for decoding
     X = epochs.get_data()
@@ -83,7 +87,8 @@ def decode_on_band(l_freq, h_freq, epochs, groups, labels):
 
 # %% ---- 2025-11-05 ------------------------
 # Play ground
-table = find_bdf_files(DATA_DIR).query(f'subject == "{SUBJECT}"')
+# table = find_bdf_files(DATA_DIR).query(f'subject == "{SUBJECT}"')
+table = find_vhdr_files(DATA_DIR).query(f'subject == "{SUBJECT}"')
 print(table)
 
 mds = []
@@ -96,6 +101,7 @@ groups = np.concat([np.zeros((len(e.epochs), )) +
                    i for i, e in enumerate(mds)]).ravel()
 labels = epochs.events[:, -1]
 print(f'{epochs=}, {groups=}, {labels=}')
+
 
 result = {
     'subject': SUBJECT,

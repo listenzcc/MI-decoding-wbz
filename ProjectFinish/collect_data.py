@@ -27,6 +27,25 @@ montage = mne.channels.make_standard_montage('standard_1020')
 # Function and class
 
 
+def find_vhdr_files(root: Path):
+    root = Path(root)
+    table = []
+    for p in sorted(root.rglob('*/EEG_multimodel/*.vhdr')):
+        subject = p.parent.parent.name
+        name = p.stem
+
+        # Make sure the data.bdf and evt.bdf both exist.
+        eeg = p.with_suffix('.eeg')
+        vmrk = p.with_suffix('.vmrk')
+        if all([e.is_file() for e in [eeg, vmrk, p]]):
+            table.append((subject, name, p))
+
+    table = pd.DataFrame(table, columns=['subject', 'name', 'path'])
+    table['type'] = 'vhdr'
+
+    return table
+
+
 def find_bdf_files(root: Path):
     root = Path(root)
     table = []
@@ -40,6 +59,7 @@ def find_bdf_files(root: Path):
             table.append((subject, name, p))
 
     table = pd.DataFrame(table, columns=['subject', 'name', 'path'])
+    table['type'] = 'bdf'
 
     return table
 
@@ -47,15 +67,27 @@ def find_bdf_files(root: Path):
 def read_eeg_data(record: pd.Series):
     # Read the raw and annotation file
     path = record.path
-    raw = mne.io.read_raw_bdf(path)
-    ann = mne.read_annotations(path.with_name('evt.bdf'))
-    raw.set_annotations(ann)
+
+    if record['type'] == 'bdf':
+        raw = mne.io.read_raw_bdf(path)
+        ann = mne.read_annotations(path.with_name('evt.bdf'))
+        raw.set_annotations(ann)
+
+    elif record['type'] == 'vhdr':
+        raw = mne.io.read_raw_brainvision(path)
+
+    else:
+        raise ValueError(f'Incorrect input: {record=}')
 
     # Setup montage
     raw.set_montage(montage, on_missing='warn')
 
     # Only interested in ['1', '2', '3'] events
     events, event_id = mne.events_from_annotations(raw)
+
+    if record['type'] == 'vhdr':
+        event_id = {k.split(' ')[-1]: v for k, v in event_id.items()}
+
     event_id = {k: v for k, v in event_id.items() if k in ['1', '2']}
     event_nums = event_id.values()
     events = np.array([e for e in events if e[-1] in event_nums])
@@ -68,7 +100,7 @@ def read_eeg_data(record: pd.Series):
 
     # Convert into epochs
     # Crop and down-sample
-    decim = int(raw.info['sfreq'] / 100)
+    decim = int(raw.info['sfreq'] / 200)
     kwargs = {
         'tmin': -2,
         'tmax': 6,
@@ -111,13 +143,19 @@ class MyData(object):
 # %% ---- 2025-11-04 ------------------------
 # Play ground
 if __name__ == '__main__':
-    table = find_bdf_files('./raw/MI-data-2024')
+    # table = find_bdf_files('./raw/MI-data-2024')
+    # print(table)
+    # se = table.iloc[0]
+    # epochs = read_eeg_data(se)
+    # md = MyData(epochs, se)
+    # print(md)
+    # print(epochs.ch_names)
+
+    table = find_vhdr_files('./raw/MI_5')
     print(table)
     se = table.iloc[0]
     epochs = read_eeg_data(se)
-    md = MyData(epochs, se)
-    print(md)
-    print(epochs.ch_names)
+    print(epochs)
 
 
 # %% ---- 2025-11-04 ------------------------

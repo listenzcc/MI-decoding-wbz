@@ -23,10 +23,14 @@ from mne.stats import permutation_cluster_1samp_test as pcluster_test
 
 from util.easy_import import *
 from collect_data import find_bdf_files, read_eeg_data, MyData
+from collect_data import find_vhdr_files
 
 # %%
 DATA_DIR = Path('./raw/MI-data-2025')
 SUBJECT = 'S1'
+
+DATA_DIR = Path('./raw/MI_5')
+SUBJECT = 'lcc'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
@@ -37,7 +41,8 @@ if len(sys.argv) > 2 and sys.argv[1] == '-s':
 
 # %% ---- 2025-11-05 ------------------------
 # Play ground
-table = find_bdf_files(DATA_DIR).query(f'subject == "{SUBJECT}"')
+# table = find_bdf_files(DATA_DIR).query(f'subject == "{SUBJECT}"')
+table = find_vhdr_files(DATA_DIR).query(f'subject == "{SUBJECT}"')
 print(table)
 
 mds = []
