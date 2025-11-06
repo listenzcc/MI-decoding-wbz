@@ -28,7 +28,7 @@ from util.easy_import import *
 from collect_data import find_bdf_files, read_eeg_data, MyData
 
 # %%
-DATA_DIR = Path('./raw/MI-data-QS')
+DATA_DIR = Path('./raw/MI-data-2024')
 SUBJECT = 'S1'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
@@ -106,12 +106,8 @@ for l_freq, h_freq in tqdm(FREQ_RANGES, 'Decoding on bands'):
     res = decode_on_band(l_freq, h_freq, epochs, groups, labels)
     result['bands'].append(res)
 
-
 joblib.dump(result, OUTPUT_DIR.joinpath('fbcsp-decoding-results.dump'))
-
-logger.info(f'Done with {__file__}')
-
-
+logger.info(f'Done with {__file__} > {SUBJECT}')
 # %% ---- 2025-11-05 ------------------------
 # Pending
 

@@ -25,8 +25,8 @@ from util.easy_import import *
 from collect_data import find_bdf_files, read_eeg_data, MyData
 
 # %%
-DATA_DIR = Path('./raw/MI-data-QS')
-SUBJECT = 'S2'
+DATA_DIR = Path('./raw/MI-data-2025')
+SUBJECT = 'S1'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
@@ -80,10 +80,8 @@ for evt in event_ids:
     # select desired epochs for visualization
     tfr_ev = tfr[evt]
     nc = 3
-    fig, axes = plt.subplots(
-        1, nc+1, figsize=(nc*4, 4), gridspec_kw={"width_ratios": [10]*nc + [1]}
-    )
-    for ch, ax in enumerate(axes[:-1]):  # for each channel
+    fig, axes = plt.subplots(1, nc, figsize=(nc*4, 4))
+    for ch, ax in enumerate(axes):  # for each channel
         # plot TFR (ERDS map with masking)
         tfr_ev.average().plot(
             [ch],
@@ -99,7 +97,6 @@ for evt in event_ids:
         if ch != 0:
             ax.set_ylabel("")
             ax.set_yticklabels("")
-    # fig.colorbar(axes[0].images[-1], cax=axes[-1]).ax.set_yscale("linear")
     fig.suptitle(f"ERDS ({evt})")
     plt.show()
 

@@ -56,14 +56,14 @@ def read_eeg_data(record: pd.Series):
 
     # Only interested in ['1', '2', '3'] events
     events, event_id = mne.events_from_annotations(raw)
-    event_id = {k: v for k, v in event_id.items() if k in ['1', '2', '3']}
+    event_id = {k: v for k, v in event_id.items() if k in ['1', '2']}
     event_nums = event_id.values()
     events = np.array([e for e in events if e[-1] in event_nums])
 
     # Convert events into (1, 2, 3) for ['1', '2', '3']
     events[events[:, -1] == event_id['1'], -1] = 1
     events[events[:, -1] == event_id['2'], -1] = 2
-    events[events[:, -1] == event_id['3'], -1] = 3
+    # events[events[:, -1] == event_id['3'], -1] = 3
     event_id = {k: int(k) for k in event_id}
 
     # Convert into epochs
@@ -111,7 +111,7 @@ class MyData(object):
 # %% ---- 2025-11-04 ------------------------
 # Play ground
 if __name__ == '__main__':
-    table = find_bdf_files('./raw/MI-data-QS')
+    table = find_bdf_files('./raw/MI-data-2024')
     print(table)
     se = table.iloc[0]
     epochs = read_eeg_data(se)

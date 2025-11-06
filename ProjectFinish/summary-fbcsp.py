@@ -43,18 +43,30 @@ def parse_result(result: dict):
 
     # Hard vote
     counts = np.array([np.sum(arr_pred == e, axis=0) for e in [1, 2, 3]])
-    hard_vote_y_pred = np.argmax(counts, axis=0) + 1
+    y_pred = np.argmax(counts, axis=0) + 1
+    y_true = result['y_true'].copy()
+    y_filter = [not t == 3 and not p == 3 for t, p in zip(y_true, y_pred)]
+    y_true = y_true[y_filter]
+    y_pred = y_pred[y_filter]
     rep = classification_report(
-        y_true=y_true, y_pred=hard_vote_y_pred, output_dict=True)
-    rep.update({'subject': result['subject'], 'method': 'hardVote'})
+        y_true=y_true, y_pred=y_pred, output_dict=True)
+    rep.update({'subject': result['subject'],
+               'samples': len(y_true),
+                'method': 'hardVote'})
     report.append(rep)
 
     # Soft vote
     probs = np.prod(arr_proba, axis=0)
-    soft_vote_y_pred = np.argmax(probs, axis=1) + 1
+    y_pred = np.argmax(probs, axis=1) + 1
+    y_true = result['y_true'].copy()
+    y_filter = [not t == 3 and not p == 3 for t, p in zip(y_true, y_pred)]
+    y_true = y_true[y_filter]
+    y_pred = y_pred[y_filter]
     rep = classification_report(
-        y_true=y_true, y_pred=soft_vote_y_pred, output_dict=True)
-    rep.update({'subject': result['subject'], 'method': 'softVote'})
+        y_true=y_true, y_pred=y_pred, output_dict=True)
+    rep.update({'subject': result['subject'],
+               'samples': len(y_true),
+                'method': 'softVote'})
     report.append(rep)
 
     return report
@@ -73,6 +85,7 @@ for d_file in tqdm(dump_files, 'Dealing with files'):
 
 df = pd.DataFrame(reports)
 print(df)
+print(df.groupby('method').mean(numeric_only=True))
 
 # %% ---- 2025-11-05 ------------------------
 # Pending
