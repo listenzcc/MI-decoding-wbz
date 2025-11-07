@@ -30,7 +30,10 @@ montage = mne.channels.make_standard_montage('standard_1020')
 def find_vhdr_files(root: Path):
     root = Path(root)
     table = []
-    for p in sorted(root.rglob('*/EEG_multimodel/*.vhdr')):
+    pattern = '*/EEG/MI_*.vhdr'
+    pattern = '*/EEG/EEG_block*.vhdr'
+    pattern = '*.vhdr'
+    for p in sorted(root.rglob(pattern)):
         subject = p.parent.parent.name
         name = p.stem
 
@@ -68,12 +71,15 @@ def read_eeg_data(record: pd.Series):
     # Read the raw and annotation file
     path = record.path
 
-    if record['type'] == 'bdf':
+    bdf_flag = record['type'] == 'bdf'
+    vhdr_flag = record['type'] == 'vhdr'
+
+    if bdf_flag:
         raw = mne.io.read_raw_bdf(path)
         ann = mne.read_annotations(path.with_name('evt.bdf'))
         raw.set_annotations(ann)
 
-    elif record['type'] == 'vhdr':
+    elif vhdr_flag:
         raw = mne.io.read_raw_brainvision(path)
 
     else:
@@ -85,10 +91,14 @@ def read_eeg_data(record: pd.Series):
     # Only interested in ['1', '2', '3'] events
     events, event_id = mne.events_from_annotations(raw)
 
-    if record['type'] == 'vhdr':
+    raw.load_data()
+    if vhdr_flag:
+        # Convert into uV unit
+        # raw._data = raw._data * 1e6
         event_id = {k.split(' ')[-1]: v for k, v in event_id.items()}
 
-    event_id = {k: v for k, v in event_id.items() if k in ['1', '2']}
+    event_id = {k: v for k, v in event_id.items() if k in [
+        '1', '2', '3', '4', '5']}
     event_nums = event_id.values()
     events = np.array([e for e in events if e[-1] in event_nums])
 
@@ -100,7 +110,8 @@ def read_eeg_data(record: pd.Series):
 
     # Convert into epochs
     # Crop and down-sample
-    decim = int(raw.info['sfreq'] / 200)
+    # decim = int(raw.info['sfreq'] / 250)
+    decim = 1
     kwargs = {
         'tmin': -2,
         'tmax': 6,
@@ -110,8 +121,9 @@ def read_eeg_data(record: pd.Series):
 
     epochs = mne.Epochs(raw, events, event_id, event_repeated='drop', **kwargs)
     ch_names = [e for e in epochs.ch_names if not e[0] in 'EHV']
-    ch_names = [e for e in ch_names if e[0] in 'COTP']
+    ch_names = [e for e in ch_names if e[0] in 'ACFOPT']
     epochs.load_data().pick(ch_names)
+    epochs.resample(200)
     epochs = epochs.drop_bad(
         reject=dict(
             eeg=500e-6,      # unit: V (EEG channels)
@@ -156,6 +168,8 @@ if __name__ == '__main__':
     se = table.iloc[0]
     epochs = read_eeg_data(se)
     print(epochs)
+    print(epochs.ch_names)
+    print(sorted(table['subject'].unique()))
 
 
 # %% ---- 2025-11-04 ------------------------

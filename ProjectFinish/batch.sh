@@ -4,15 +4,13 @@
 script=decode-fbcnet.py
 
 python $script -s bxy &
+python $script -s bxy2 &
 python $script -s gc &
-python $script -s hyj &
-python $script -s lcc &
+python $script -s gc2 &
 python $script -s ljy &
-python $script -s ll &
-python $script -s lzb &
-python $script -s xs &
-python $script -s yyt &
-python $script -s xzy
+python $script -s ljy2 &
+python $script -s lcc &
+python $script -s lzb
 
 # python $script -s S1 &
 # python $script -s S2 &

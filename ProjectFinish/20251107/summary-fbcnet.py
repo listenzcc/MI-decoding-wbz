@@ -30,14 +30,20 @@ OUTPUT_DIR = DATA_DIR
 # Function and class
 
 
-def parse_result(result: dict):
-    y_true = result['y_true']
-    y_pred = result['y_pred']
-    subject = result['subject']
-
-    y_filter = [not t == 3 and not p == 3 for t, p in zip(y_true, y_pred)]
+def filter_y(y_true, y_pred):
+    y_filter = [t in [1, 2] and p in [1, 2]
+                for t, p in zip(y_true, y_pred)]
     y_true = y_true[y_filter]
     y_pred = y_pred[y_filter]
+    return y_true, y_pred
+
+
+def parse_result(result: dict):
+    subject = result['subject']
+    y_true = result['y_true']
+    y_pred = result['y_pred']
+
+    y_true, y_pred = filter_y(y_true, y_pred)
 
     rep = classification_report(
         y_true=y_true, y_pred=y_pred, output_dict=True)

@@ -30,7 +30,7 @@ DATA_DIR = Path('./raw/MI-data-2025')
 SUBJECT = 'S1'
 
 DATA_DIR = Path('./raw/MI_5')
-SUBJECT = 'lcc'
+SUBJECT = 'zzr'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]

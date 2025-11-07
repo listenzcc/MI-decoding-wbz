@@ -32,13 +32,14 @@ DATA_DIR = Path('./raw/MI-data-2024')
 SUBJECT = 'S1'
 
 DATA_DIR = Path('./raw/MI_5')
-SUBJECT = 'zg'
+SUBJECT = 'zyk'
+SUBJECT = 'zzr'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
 
 # %%
-FREQ_RANGES = [(e, e+4) for e in range(1, 45, 2)]
+FREQ_RANGES = [(e, e+4) for e in range(1, 45, 4)]
 
 # %%
 OUTPUT_DIR = Path(f'./data/results/fbcsp/{SUBJECT}')
@@ -97,8 +98,8 @@ for i, se in tqdm(table.iterrows(), 'Load data'):
 print(mds)
 
 epochs = mne.concatenate_epochs([e.epochs for e in mds])
-groups = np.concat([np.zeros((len(e.epochs), )) +
-                   i for i, e in enumerate(mds)]).ravel()
+groups = np.concatenate([np.zeros((len(e.epochs), )) +
+                         i for i, e in enumerate(mds)]).ravel()
 labels = epochs.events[:, -1]
 print(f'{epochs=}, {groups=}, {labels=}')
 
