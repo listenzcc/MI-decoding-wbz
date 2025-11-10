@@ -36,7 +36,7 @@ if len(sys.argv) > 2 and sys.argv[1] == '-s':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/fbcsp-info/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/exp_record/results/fbcsp-info-cvruns/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %%
@@ -115,7 +115,7 @@ def load_data_np(path: Path):
     return X, y
 
 
-def fbcsp_decoding(X, y):
+def fbcsp_decoding(X, y, groups):
     '''
     Decoding with FBCSP
 
@@ -128,7 +128,11 @@ def fbcsp_decoding(X, y):
     cv_list = list(cv.split(X, y))
 
     acc_cv = []
-    for train_index, test_index in tqdm(cv_list, 'CV'):
+    # for train_index, test_index in tqdm(cv_list, 'CV'):
+    for g in tqdm(sorted(set(groups)), 'CV'):
+        train_index = groups[groups != g]
+        test_index = groups[groups == g]
+
         fbcsp = FBCSP_info(FB, n_components, (tmin, tmax), k_select)
         fbcsp.fit(X[train_index], y[train_index])
 
@@ -145,20 +149,30 @@ data_all = []
 label_all = []
 epochs_all = []
 
-for i in tqdm(range(N_RUNS), f'Loading runs ({SUBJECT=})'):
-    X, y = load_data_np(RAW_DIR.joinpath(f'{SUBJECT}/run_{i}.npy'))
+Xs = []
+ys = []
+gs = []
 
-    # events = np.column_stack((np.array([i*sfreq*8 for i in range(len(y))]),
-    #                           np.zeros(len(y), dtype=int),
-    #                           y))
-    # epochs = mne.EpochsArray(
-    #     X, info, tmin=tmin, events=events, event_id=event_id)
+for i_run in tqdm(range(N_RUNS), f'Loading runs ({SUBJECT=})'):
+    X, y = load_data_np(RAW_DIR.joinpath(f'{SUBJECT}/run_{i_run}.npy'))
 
-    acc_cv = fbcsp_decoding(X, y)
-    acc_all.append(acc_cv)
-    print(acc_cv)
-    joblib.dump(acc_cv, OUTPUT_DIR.joinpath(f'run_{i}.dump'))
-    logger.info(f'Done with {SUBJECT=}, {i=}')
+    Xs.append(X)
+    ys.append(y)
+    gs.append(y * 0 + i_run)
+
+
+X = np.concatenate(Xs)
+y = np.concatenate(ys)
+groups = np.concatenate(gs)
+
+print(X.shape, y.shape, groups.shape)
+
+acc_cv = fbcsp_decoding(X, y, groups)
+acc_all.append(acc_cv)
+print(acc_cv)
+joblib.dump(acc_cv, OUTPUT_DIR.joinpath(f'run_999.dump'))
+logger.info(f'Done with {SUBJECT=}')
+
 
 # %% ---- 2025-11-07 ------------------------
 # Pending

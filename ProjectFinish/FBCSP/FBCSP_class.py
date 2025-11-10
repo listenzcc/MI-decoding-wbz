@@ -160,6 +160,15 @@ class FBCSP():
     def predict_all(self, test_data):
         predict_bands = self.predict(test_data)
         hard_pred = hard_vote(predict_bands)
+
+        # shape is (n_bands, n_samples, n_classes)
+        # predict_bands_prob = self.prob(test_data)
+        # print(f'{predict_bands_prob=}, {np.array(predict_bands_prob).shape=}')
+        # soft_pred = soft_vote(predict_bands_prob)
+        # print(f'{hard_pred.shape=}')
+        # print(f'{soft_pred.shape=}')
+        # stophere
+
         prob_bands = self.prob(test_data)
         soft_pred = np.argmax(np.mean(prob_bands, axis=0),
                               axis=-1)+self.min_label
@@ -167,7 +176,8 @@ class FBCSP():
         test_feature = np.array(prob_bands).swapaxes(
             0, 1).reshape((test_data.shape[0], -1))
 
-        stacking_predict = self.stacking_clf.predict(test_feature)
+        # stacking_predict = self.stacking_clf.predict(test_feature)
+        stacking_predict = None
 
         return predict_bands, hard_pred, soft_pred, stacking_predict
 
@@ -440,6 +450,16 @@ def hard_vote(multi_preds):
     vote = np.array(vote)
     return vote
 
+def soft_vote(multi_preds):
+    # multi_preds shape is (n_bands, n_samples, n_classes)
+    multi_preds = np.array(multi_preds)
+    joint_preds = np.prod(multi_preds, axis=0)
+    vote = np.argmax(joint_preds, axis=1)
+    # Convert into real labels
+    vote = vote + 1
+    return vote
+
+
 
 def crop_data(train_data, train_labels, slice_crop, fs):
     train_data_all = []
@@ -532,7 +552,7 @@ class FBCSP_C2CM():
         return predict
 
 
-def hard_vote(multi_preds):
+def hard_vote_old(multi_preds):
     # multi_preds[model,sample]
     multi_preds = np.array(multi_preds)
     vote = []
@@ -542,7 +562,7 @@ def hard_vote(multi_preds):
     return vote
 
 
-def crop_data(train_data, train_labels, slice_crop, fs):
+def crop_data_old(train_data, train_labels, slice_crop, fs):
     train_data_all = []
     train_labels_all = []
     for i_slice in slice_crop:
