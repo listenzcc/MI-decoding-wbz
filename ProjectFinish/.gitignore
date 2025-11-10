@@ -1,5 +1,6 @@
 raw
 data
 batch.sh
+batch-days.sh
 result_cv.py
 experiment-setup.md

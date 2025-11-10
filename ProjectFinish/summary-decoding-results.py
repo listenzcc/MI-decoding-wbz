@@ -1,5 +1,5 @@
 """
-File: summary-fbcsp.py
+File: summary-decoding-results.py
 Author: Chuncheng Zhang
 Date: 2025-11-07
 Copyright & Email: chuncheng.zhang@ia.ac.cn
@@ -58,14 +58,16 @@ if any([
     FBCSP_NAME == 'fbcsp-info' and METHOD in ['default'],
     FBCSP_NAME == 'fbcsp-info-cvruns' and METHOD in ['default'],
 ]):
-    data_table['acc'] = data_table['path'].map(lambda f: np.mean(joblib.load(f)))
+    data_table['acc'] = data_table['path'].map(
+        lambda f: np.mean(joblib.load(f)))
 
 elif any([
     FBCSP_NAME == 'fbcsp-vote' and METHOD in ['softvote', 'hardvote'],
     FBCSP_NAME == 'fbcnet' and METHOD in ['fbcnet'],
     FBCSP_NAME == 'fbcnet-cvruns' and METHOD in ['fbcnet'],
-    ]):
-    data_table['acc'] = data_table['path'].map(lambda f: np.mean([e[1] for e in joblib.load(f) if e[0] == METHOD]))
+]):
+    data_table['acc'] = data_table['path'].map(lambda f: np.mean(
+        [e[1] for e in joblib.load(f) if e[0] == METHOD]))
 
 else:
     raise ValueError(f'Known param: {FBCSP_NAME=}, {METHOD=}')

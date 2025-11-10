@@ -1,11 +1,11 @@
 """
-File: decode-fbcsp.py
+File: decode-fbcsp-info.py
 Author: Chuncheng Zhang
 Date: 2025-11-07
 Copyright & Email: chuncheng.zhang@ia.ac.cn
 
 Purpose:
-    Decode with FBCSP
+    Decode with FBCSP with infomax feature selection.
 
 Functions:
     1. Requirements and constants
@@ -22,7 +22,7 @@ from scipy import signal
 from sklearn.model_selection import StratifiedKFold
 
 from util.easy_import import *
-from FBCSP.FBCSP_class import filter_bank, FBCSP_info, FBCSP_info_weighted, FBCSP
+from FBCSP.FBCSP_class import filter_bank, FBCSP_info, FBCSP_info_weighted
 
 
 # %%
@@ -36,7 +36,7 @@ if len(sys.argv) > 2 and sys.argv[1] == '-s':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/fbcsp-vote/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/exp_record/results/fbcsp-info/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %%
@@ -44,7 +44,6 @@ k_select = 10
 
 n_components = 4
 freq_bands = [[4+i*4, 8+i*4] for i in range(9)]+[[8, 32]]
-# freq_bands = freq_bands[:5]
 filter_type = 'iir'
 filt_order = 5
 
@@ -67,36 +66,6 @@ event_id = {
 
 # %% ---- 2025-11-07 ------------------------
 # Function and class
-
-def decode_on_band(l_freq, h_freq, epochs, groups, labels):
-    # Work on the copied epochs
-    epochs = epochs.copy()
-    epochs.filter(l_freq=l_freq, h_freq=h_freq, n_jobs=n_jobs)
-    print(epochs)
-
-    # Prepare for decoding
-    X = epochs.get_data()
-    y = labels
-
-    cv = LeaveOneGroupOut()
-
-    clf = make_pipeline(
-        Scaler(epochs.info),
-        CSP(),
-        LogisticRegression()
-    )
-
-    y_proba = cross_val_predict(
-        estimator=clf, X=X, y=y, groups=groups, cv=cv, method='predict_proba')
-
-    y_pred = np.argmax(y_proba, axis=1) + 1
-
-    return {
-        'l_freq': l_freq,
-        'h_freq': h_freq,
-        'y_proba': y_proba,
-        'y_pred': y_pred,
-    }
 
 
 def load_data_np(path: Path):
@@ -154,19 +123,17 @@ def fbcsp_decoding(X, y):
     :param y np.array: The label array.
     '''
     FB = filter_bank(freq_bands, sfreq, filt_order, filter_type)
-    n_freq_bands = len(freq_bands)
 
     cv = StratifiedKFold(n_splits=5)
     cv_list = list(cv.split(X, y))
 
     acc_cv = []
     for train_index, test_index in tqdm(cv_list, 'CV'):
-        fbcsp = FBCSP(FB, [n_components]*n_freq_bands, [(tmin, tmax)]*n_freq_bands)
+        fbcsp = FBCSP_info(FB, n_components, (tmin, tmax), k_select)
         fbcsp.fit(X[train_index], y[train_index])
 
-        _, _pred_hard, _pred_soft, _ = fbcsp.predict_all(X[test_index])
-        acc_cv.append(('softvote', np.mean(y[test_index] == _pred_soft)))
-        acc_cv.append(('hardvote', np.mean(y[test_index] == _pred_hard)))
+        _pred = fbcsp.predict(X[test_index])
+        acc_cv.append(np.mean(y[test_index] == _pred))
 
     return acc_cv
 
@@ -177,30 +144,15 @@ acc_all = []
 data_all = []
 label_all = []
 epochs_all = []
-result = {
-    'subject': SUBJECT,
-    'bands': []
-}
 
 for i in tqdm(range(N_RUNS), f'Loading runs ({SUBJECT=})'):
     X, y = load_data_np(RAW_DIR.joinpath(f'{SUBJECT}/run_{i}.npy'))
 
-    '''
-    events = np.column_stack((np.array([i*sfreq*8 for i in range(len(y))]),
-                              np.zeros(len(y), dtype=int),
-                              y))
-    epochs = mne.EpochsArray(
-        X, info, tmin=tmin, events=events, event_id=event_id)
-
-    for l_freq, h_freq in tqdm(freq_bands, 'Decoding on bands'):
-        res = decode_on_band(l_freq, h_freq, epochs, groups, y)
-        result['bands'].append(res)
-
-    result['y_true'] = y
-    joblib.dump(result, OUTPUT_DIR.joinpath(f'result_run_{i}.dump'))
-
-    continue
-    '''
+    # events = np.column_stack((np.array([i*sfreq*8 for i in range(len(y))]),
+    #                           np.zeros(len(y), dtype=int),
+    #                           y))
+    # epochs = mne.EpochsArray(
+    #     X, info, tmin=tmin, events=events, event_id=event_id)
 
     acc_cv = fbcsp_decoding(X, y)
     acc_all.append(acc_cv)

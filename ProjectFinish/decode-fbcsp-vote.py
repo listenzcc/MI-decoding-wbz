@@ -1,11 +1,11 @@
 """
-File: decode-fbcsp.py
+File: decode-fbcsp-vote.py
 Author: Chuncheng Zhang
 Date: 2025-11-07
 Copyright & Email: chuncheng.zhang@ia.ac.cn
 
 Purpose:
-    Decode with FBCSP
+    Decode with FBCSP and voting the predict.
 
 Functions:
     1. Requirements and constants
@@ -22,7 +22,7 @@ from scipy import signal
 from sklearn.model_selection import StratifiedKFold
 
 from util.easy_import import *
-from FBCSP.FBCSP_class import filter_bank, FBCSP_info, FBCSP_info_weighted
+from FBCSP.FBCSP_class import filter_bank, FBCSP_info, FBCSP_info_weighted, FBCSP
 
 
 # %%
@@ -36,7 +36,7 @@ if len(sys.argv) > 2 and sys.argv[1] == '-s':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/fbcsp-info/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/exp_record/results/fbcsp-vote/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %%
@@ -44,6 +44,7 @@ k_select = 10
 
 n_components = 4
 freq_bands = [[4+i*4, 8+i*4] for i in range(9)]+[[8, 32]]
+# freq_bands = freq_bands[:5]
 filter_type = 'iir'
 filt_order = 5
 
@@ -123,17 +124,20 @@ def fbcsp_decoding(X, y):
     :param y np.array: The label array.
     '''
     FB = filter_bank(freq_bands, sfreq, filt_order, filter_type)
+    n_freq_bands = len(freq_bands)
 
     cv = StratifiedKFold(n_splits=5)
     cv_list = list(cv.split(X, y))
 
     acc_cv = []
     for train_index, test_index in tqdm(cv_list, 'CV'):
-        fbcsp = FBCSP_info(FB, n_components, (tmin, tmax), k_select)
+        fbcsp = FBCSP(FB, [n_components]*n_freq_bands,
+                      [(tmin, tmax)]*n_freq_bands)
         fbcsp.fit(X[train_index], y[train_index])
 
-        _pred = fbcsp.predict(X[test_index])
-        acc_cv.append(np.mean(y[test_index] == _pred))
+        _, _pred_hard, _pred_soft, _ = fbcsp.predict_all(X[test_index])
+        acc_cv.append(('softvote', np.mean(y[test_index] == _pred_soft)))
+        acc_cv.append(('hardvote', np.mean(y[test_index] == _pred_hard)))
 
     return acc_cv
 
@@ -144,16 +148,13 @@ acc_all = []
 data_all = []
 label_all = []
 epochs_all = []
+result = {
+    'subject': SUBJECT,
+    'bands': []
+}
 
 for i in tqdm(range(N_RUNS), f'Loading runs ({SUBJECT=})'):
     X, y = load_data_np(RAW_DIR.joinpath(f'{SUBJECT}/run_{i}.npy'))
-
-    # events = np.column_stack((np.array([i*sfreq*8 for i in range(len(y))]),
-    #                           np.zeros(len(y), dtype=int),
-    #                           y))
-    # epochs = mne.EpochsArray(
-    #     X, info, tmin=tmin, events=events, event_id=event_id)
-
     acc_cv = fbcsp_decoding(X, y)
     acc_all.append(acc_cv)
     print(acc_cv)
