@@ -1,11 +1,11 @@
 """
-File: decode-fbcsp.py
+File: decode-fbcnet.py
 Author: Chuncheng Zhang
 Date: 2025-11-07
 Copyright & Email: chuncheng.zhang@ia.ac.cn
 
 Purpose:
-    Decode with FBCSP
+    Decode with FBCNet.
 
 Functions:
     1. Requirements and constants
