@@ -27,6 +27,14 @@ RAW_DIR = Path('./raw/wbz-20251201-data')
 # Function and class
 
 
+def detect_bad_channels(X):
+    X = X.copy()
+    x = X.transpose(2, 0, 1).reshape((32, -1))
+    s = np.std(x, axis=1)
+    bad_index = np.where(s == 0)[0]
+    return bad_index
+
+
 def load_epochs_data(mat_file_path):
     obj = sio.loadmat(mat_file_path, squeeze_me=True)
     data = {}
@@ -38,6 +46,7 @@ def load_epochs_data(mat_file_path):
         except:
             print(k, v)
 
+    # ! Currently data shape is (n_epochs, n_times, n_channels)
     data = {
         'data': obj['epochdata'].squeeze(),
         'task': obj['task_seq'].squeeze(),
@@ -45,9 +54,17 @@ def load_epochs_data(mat_file_path):
         'tmax': 7,
         'ttask': (0, 4)
     }
+
     n_epochs, n_times, n_channels = data['data'].shape
+
+    bad_index = detect_bad_channels(data['data'])
+    X_map = [e for e in range(32) if e not in bad_index]
+
     # ! Transpose to (n_epochs, n_channels, n_times)
     data['data'] = data['data'].transpose([0, 2, 1])
+    data['data'] = data['data'][:, X_map, :]
+
+    n_channels = data['data'].shape[1]
 
     assert n_epochs == len(data['task']), 'Incorrect epochsdata or task_seq'
     events = np.column_stack([

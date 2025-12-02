@@ -41,7 +41,7 @@ FREQ_RANGES = [(e, e+4) for e in range(1, 45, 2)]
 
 # %%
 # Check results
-if False:
+if True:
     dump_files = DATA_DIR.rglob('*.joblib')
     for fname in dump_files:
         obj = joblib.load(fname)
@@ -112,23 +112,26 @@ print(mat_files)
 mat_file_path = mat_files[0]
 for file_path in tqdm(mat_files):
     subject = file_path.stem.split('_')[0]
+
+    output_file = DATA_DIR.joinpath(
+        f'{subject}-freq-CSP-results.joblib')
+    if output_file.is_file():
+        print(f'Ignore exiting file: {output_file}')
+        continue
+
     epochs = load_epochs_data(file_path)
     epochs.resample(200)
     print(subject, epochs)
 
-    output_file = DATA_DIR.joinpath(
-        f'{subject}-freq-CSP-results.joblib')
-    if not output_file.is_file():
-        try:
-            freq_CSP_results = decoding_with_FBCSP_voting(epochs)
-            joblib.dump(output_file)
-        except:
-            pass
+    freq_CSP_results = decoding_with_FBCSP_voting(epochs)
+    joblib.dump(freq_CSP_results, output_file)
 
 
 # %% ---- 2025-12-01 ------------------------
 # Pending
 
-
 # %% ---- 2025-12-01 ------------------------
 # Pending
+
+
+# %%
