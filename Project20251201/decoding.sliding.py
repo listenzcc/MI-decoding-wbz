@@ -35,6 +35,7 @@ DATA_DIR = Path('./data/decoding-sliding')
 DATA_DIR.mkdir(exist_ok=True, parents=True)
 
 RAW_DIR = Path('./raw/wbz-20251201-data')
+RAW_DIR = Path('./raw/wbz-20251204-data')
 
 # %% ---- 2025-12-01 ------------------------
 # Function and class

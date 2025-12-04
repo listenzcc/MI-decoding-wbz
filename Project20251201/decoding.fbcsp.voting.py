@@ -36,6 +36,7 @@ DATA_DIR = Path('./data/decoding-FBCSP-voting')
 DATA_DIR.mkdir(exist_ok=True, parents=True)
 
 RAW_DIR = Path('./raw/wbz-20251201-data')
+RAW_DIR = Path('./raw/wbz-20251204-data')
 
 FREQ_RANGES = [(e, e+4) for e in range(1, 45, 2)]
 
@@ -43,6 +44,7 @@ FREQ_RANGES = [(e, e+4) for e in range(1, 45, 2)]
 # Check results
 if True:
     dump_files = DATA_DIR.rglob('*.joblib')
+    df = []
     for fname in dump_files:
         obj = joblib.load(fname)
         y_true = obj['y_true']
@@ -53,7 +55,12 @@ if True:
         y_proba = np.prod(y_probas, axis=0)
         y_pred = np.argmax(y_proba, axis=1) + 1
         acc = np.mean(y_pred == y_true)
-        print(acc)
+        subject = fname.stem.split('-')[0]
+        print(subject, acc)
+        df.append((subject, acc))
+    df = pd.DataFrame(df, columns=['subject', 'accuracy'])
+    df.sort_values(by='accuracy', ascending=False, inplace=True)
+    display(df)
 
 # %% ---- 2025-12-01 ------------------------
 # Function and class
