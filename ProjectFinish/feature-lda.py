@@ -54,9 +54,9 @@ event_id = {
 }
 
 # %%
-RAW_DIR = Path('./raw/exp_records')
+RAW_DIR = Path('./raw/MI-dataset')
 
-SUBJECT = 'zhangyukun1'
+SUBJECT = 'sub001'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
@@ -64,7 +64,7 @@ if len(sys.argv) > 2 and sys.argv[1] == '-s':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/f-lda/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/MI-dataset-results/f-lda/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %% ---- 2025-11-10 ------------------------
@@ -289,6 +289,10 @@ print("\nCreating LDA weights topomap...")
 fig, ax, all_weights = plot_lda_topomap(lda_weights, ch_names, epochs_lda.info,
                                         title="LDA Weights for Mu Band (8-13 Hz) Classification")
 
+fig.tight_layout()
+fig.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
+plt.show()
+
 # Additional visualization: Compare feature distributions for top channels
 # Top 5 most important channels
 top_ch_idx = np.argsort(np.abs(lda_weights))[-5:]
@@ -329,6 +333,7 @@ axes[5].legend()
 axes[5].grid(True, alpha=0.3)
 
 plt.tight_layout()
+plt.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
 plt.show()
 
 # Method 3: Time-resolved LDA analysis
@@ -403,8 +408,6 @@ print(
 print(f"Top discriminative channels: {', '.join(top_ch_names)}")
 print(f"LDA model trained successfully!")
 
-# Show the topomap
-plt.show()
 
 # %% ---- 2025-11-10 ------------------------
 # Pending

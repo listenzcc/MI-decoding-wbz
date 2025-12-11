@@ -35,9 +35,8 @@ from FBCSP.FBCSP_class import filter_bank, FBCSP_info, FBCSP_info_weighted
 
 
 # %%
-RAW_DIR = Path('./raw/exp_records')
-
-SUBJECT = 'zhangyukun1'
+RAW_DIR = Path('./raw/MI-dataset')
+SUBJECT = 'sub001'
 DEVICE = np.random.randint(0, 6)
 DEVICE = 0
 
@@ -51,7 +50,7 @@ if len(sys.argv) > 4 and sys.argv[3] == '-d':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/fbcnet/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/MI-dataset-results/f-fbcnet/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %%
@@ -377,6 +376,7 @@ def visualize_fbcnet_results(model, info, epochs, num_classes):
             ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
+        plt.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
         plt.show()
 
     # 4. Visualize Spectral Filters (Filter Bank)
@@ -405,6 +405,7 @@ def visualize_fbcnet_results(model, info, epochs, num_classes):
         ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
+        plt.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
         plt.show()
 
     # 5. Visualize Spatial Patterns
@@ -488,6 +489,7 @@ def plot_spatial_patterns(spatial_weights, info, num_classes):
         ax.set_title('FBCNet Spatial Weights (Averaged)',
                      fontsize=14, fontweight='bold')
         plt.colorbar(im, ax=ax, shrink=0.8, label='Weight Magnitude')
+        plt.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
         plt.show()
     else:
         print(
@@ -551,7 +553,8 @@ def analyze_feature_importance(model, epochs, num_classes):
     plot_network_feature_flow(model, sample_data, axes[2])
     axes[2].set_title('FBCNet Network Feature Flow')
 
-    plt.tight_layout()
+    fig.tight_layout()
+    fig.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
     plt.show()
 
     return feature_importance
@@ -688,7 +691,8 @@ def plot_class_patterns(model, info, num_classes):
         ax.set_title(f'Class {class_idx} Pattern', fontsize=12)
         plt.colorbar(im, ax=ax, shrink=0.8)
 
-    plt.tight_layout()
+    fig.tight_layout()
+    fig.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
     plt.show()
 
 
@@ -728,7 +732,8 @@ def visualize_training_history(training_history):
     axes[1].legend()
     axes[1].grid(True, alpha=0.3)
 
-    plt.tight_layout()
+    fig.tight_layout()
+    fig.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
     plt.show()
 
 # 或者使用更详细的网络结构可视化
@@ -863,7 +868,8 @@ def analyze_feature_importance(model, epochs, num_classes):
 
     axes[2].set_title('FBCNet Network Architecture', fontweight='bold')
 
-    plt.tight_layout()
+    fig.tight_layout()
+    fig.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
     plt.show()
 
     return feature_importance

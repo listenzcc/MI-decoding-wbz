@@ -54,9 +54,9 @@ event_id = {
 }
 
 # %%
-RAW_DIR = Path('./raw/exp_records')
+RAW_DIR = Path('./raw/MI-dataset')
 
-SUBJECT = 'zhangyukun1'
+SUBJECT = 'sub001'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
@@ -64,7 +64,7 @@ if len(sys.argv) > 2 and sys.argv[1] == '-s':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/f-lda/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/MI-dataset-results/f-csp/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %% ---- 2025-11-10 ------------------------
@@ -288,6 +288,8 @@ def plot_csp_topomaps(patterns, info, component_names=None, figsize=(15, 10)):
 print("\nCreating CSP topomaps...")
 fig_topomaps = plot_csp_topomaps(csp_patterns[:n_components], epochs_csp.info,
                                  component_names=[f'Comp {i+1}' for i in range(n_components)])
+fig_topomaps.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
+plt.show()
 
 # Plot component variances (explained by each CSP component)
 fig_var, ax_var = plt.subplots(figsize=(10, 6))
@@ -305,6 +307,8 @@ ax_var.grid(True, alpha=0.3)
 for i, v in enumerate(explained_var_ratio):
     ax_var.text(i + 1, v * 100 + 1, f'{v*100:.1f}%',
                 ha='center', va='bottom', fontweight='bold')
+fig_var.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
+plt.show()
 
 # Plot feature distributions for top CSP components
 fig_dist, axes = plt.subplots(2, 2, figsize=(12, 10))
@@ -337,6 +341,7 @@ if len(axes) > 4:
     axes[4].grid(True, alpha=0.3)
 
 plt.tight_layout()
+fig_dist.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
 plt.show()
 
 # Create a summary topomap showing the most discriminative patterns
@@ -365,6 +370,7 @@ def plot_csp_discriminative_patterns(patterns, info, n_components=4):
 # Plot discriminative patterns
 fig_discrim = plot_csp_discriminative_patterns(
     csp_patterns[:n_components], epochs_csp.info)
+fig_discrim.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
 
 # Print component analysis
 print("\n" + "="*60)

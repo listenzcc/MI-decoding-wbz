@@ -20,6 +20,7 @@ Functions:
 # Requirements and constants
 from scipy import signal
 from util.easy_import import *
+from datetime import datetime
 
 # %%
 k_select = 10
@@ -47,9 +48,9 @@ event_id = {
 }
 
 # %%
-RAW_DIR = Path('./raw/exp_records')
+RAW_DIR = Path('./raw/MI-dataset')
 
-SUBJECT = 'zhangyukun1'
+SUBJECT = 'sub001'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
@@ -57,7 +58,7 @@ if len(sys.argv) > 2 and sys.argv[1] == '-s':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/v-erd/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/MI-dataset-results/v-erd/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %% ---- 2025-11-10 ------------------------
@@ -200,6 +201,7 @@ for evt in ['1', '2']:
 
     fig.suptitle(f'{SUBJECT=}, {evt=}')
     plt.tight_layout()
+    plt.savefig(OUTPUT_DIR.joinpath(f'{datetime.now()}.png'))
     plt.show()
 
 # Return the ERD results

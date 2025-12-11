@@ -38,15 +38,19 @@ if sys.argv[3] == '-m':
     METHOD = sys.argv[4]
 
 DATA_DIR = Path(f'./data/exp_record/results/{FBCSP_NAME}')
+DATA_DIR = Path(f'./data/MI-dataset-results/{FBCSP_NAME}')
 
 # %% ---- 2025-11-07 ------------------------
 # Function and class
+comments = []
+[comments.extend([e.strip()] * 10)
+ for e in open('.subjects', encoding='utf-8').read().split('\n')[:36]]
 
 
 # %% ---- 2025-11-07 ------------------------
 # Play ground
-data_table = pd.DataFrame([(e.parent.name[:-1], e.parent.name[-1], e.stem.split('_')[-1], e)
-                           for e in DATA_DIR.rglob('*.dump')],
+data_table = pd.DataFrame([(c[:-1], c[-1], e.stem.split('_')[-1], e)
+                           for c, e in zip(comments, sorted(list(DATA_DIR.rglob('*.dump'))))],
                           columns=['subject', 'day', 'run', 'path'])
 
 print('='*80)

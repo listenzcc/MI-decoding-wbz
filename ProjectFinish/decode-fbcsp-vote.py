@@ -26,9 +26,8 @@ from FBCSP.FBCSP_class import filter_bank, FBCSP_info, FBCSP_info_weighted, FBCS
 
 
 # %%
-RAW_DIR = Path('./raw/exp_records')
-
-SUBJECT = 'zhangyukun1'
+RAW_DIR = Path('./raw/MI-dataset')
+SUBJECT = 'sub001'
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
     SUBJECT = sys.argv[2]
@@ -36,7 +35,7 @@ if len(sys.argv) > 2 and sys.argv[1] == '-s':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/fbcsp-vote/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/MI-dataset-results/fbcsp-vote/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %%

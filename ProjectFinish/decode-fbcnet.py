@@ -30,9 +30,8 @@ from FBCSP.FBCSP_class import filter_bank, FBCSP_info, FBCSP_info_weighted
 
 
 # %%
-RAW_DIR = Path('./raw/exp_records')
-
-SUBJECT = 'zhangyukun1'
+RAW_DIR = Path('./raw/MI-dataset')
+SUBJECT = 'sub001'
 DEVICE = np.random.randint(0, 6)
 
 if len(sys.argv) > 2 and sys.argv[1] == '-s':
@@ -45,7 +44,7 @@ if len(sys.argv) > 4 and sys.argv[3] == '-d':
 # Every subject has 10 runs
 N_RUNS = 10
 
-OUTPUT_DIR = Path(f'./data/exp_record/results/fbcnet/{SUBJECT}')
+OUTPUT_DIR = Path(f'./data/MI-dataset-results/fbcnet/{SUBJECT}')
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # %%
@@ -75,6 +74,7 @@ event_id = {
 
 # %% ---- 2025-11-07 ------------------------
 # Function and class
+
 
 class DataLoader:
     def __init__(self, X, y, groups, test_group=0):
@@ -161,6 +161,7 @@ def load_data_np(path: Path):
     print(f'{X.shape=}, {y.shape=}, {set(y)=}')
     return X, y
 
+
 def mk_groups(X, y):
     cv = StratifiedKFold(n_splits=5)
     cv_list = list(cv.split(X, y))
@@ -170,6 +171,7 @@ def mk_groups(X, y):
         groups[test_index] = i
 
     return groups
+
 
 def fbcsp_decoding(X, y):
     '''
@@ -192,6 +194,7 @@ def fbcsp_decoding(X, y):
         acc_cv.append(np.mean(y[test_index] == _pred))
 
     return acc_cv
+
 
 def decode_fbcnet(X, y, groups):
     y_pred_all = y.copy()
@@ -257,13 +260,15 @@ def decode_fbcnet(X, y, groups):
                 _y = model(torch.tensor(X, dtype=torch.float32)).cpu()
                 y_pred = torch.argmax(_y, dim=1).numpy() + 1
                 accuracy = np.mean(y_pred == y_true)
-                logger.info(f'Test Accuracy ({test_group}): {accuracy * 100:.2f}%')
+                logger.info(
+                    f'Test Accuracy ({test_group}): {accuracy * 100:.2f}%')
 
             y_pred_all[groups == int(test_group)] = y_pred
 
         _test()
 
     return y_pred_all
+
 
 # %% ---- 2025-11-07 ------------------------
 # Play ground
@@ -310,7 +315,8 @@ for i_run in tqdm(range(N_RUNS), f'Loading runs ({SUBJECT=})'):
     decoded = decode_fbcnet(X, y, groups)
     acc_cv = []
     for g in sorted(set(groups)):
-        acc = np.sum(y[groups==g]==decoded[groups==g])/len(groups[groups==g])
+        acc = np.sum(y[groups == g] == decoded[groups == g]) / \
+            len(groups[groups == g])
         acc_cv.append(('fbcnet', acc))
     print(acc_cv)
     joblib.dump(acc_cv, OUTPUT_DIR.joinpath(f'run_{i_run}.dump'))
