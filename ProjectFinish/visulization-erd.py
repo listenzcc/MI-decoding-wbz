@@ -20,7 +20,6 @@ Functions:
 # Requirements and constants
 from scipy import signal
 from util.easy_import import *
-from datetime import datetime
 
 # %%
 k_select = 10

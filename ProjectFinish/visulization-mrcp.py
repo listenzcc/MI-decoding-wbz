@@ -22,7 +22,6 @@ Functions:
 from scipy.stats import ttest_rel
 from mne.viz import plot_topomap
 from scipy import signal
-from datetime import datetime
 from util.easy_import import *
 
 # %%
